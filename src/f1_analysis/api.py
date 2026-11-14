@@ -113,12 +113,26 @@ def fetch_all_pages(session, endpoint, output_file, record_type):
 
         if record_type == "races":
             received = len(races)
+
         elif record_type == "laps":
             received = sum(
                 len(lap["Timings"])
                 for race in races
                 for lap in race.get("Laps", [])
             )
+
+        elif record_type == "results":
+            received = sum(
+                len(race.get("Results", []))
+                for race in races
+            )
+
+        elif record_type == "pitstops":
+            received = sum(
+                len(race.get("PitStops", []))
+                for race in races
+            )
+
         else:
             raise ValueError("Unsupported record type.")
 
