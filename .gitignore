@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Temporary and unfinished downloads
+*.tmp
+data/raw/laps/**/*_partial/
+data/processed/laps/lap_times.csv
