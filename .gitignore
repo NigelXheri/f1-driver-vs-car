@@ -13,3 +13,6 @@ venv/
 *.tmp
 data/raw/laps/**/*_partial/
 data/processed/laps/lap_times.csv
+
+AGENTS.md
+.gitignore
