@@ -18,8 +18,9 @@ COLUMNS = (
     # "race_url",
     "circuit_id", "circuit_name",
     # "circuit_url",
-    "country", "locality",
-    "latitude", "longitude", "driver_id", "lap", "position", "lap_time",
+    # "country", "locality",
+    # "latitude", "longitude",
+    "driver_id", "lap", "position", "lap_time",
 )
 
 
@@ -43,8 +44,9 @@ def write_race(csv_writer, path):
                 circuit["circuitId"],
                 circuit["circuitName"],
                 # circuit.get("url", ""),
-                location.get("country", ""), location.get("locality", ""),
-                location.get("lat", ""), location.get("long", ""),
+                # location.get("country", ""),
+                # location.get("locality", ""),
+                # location.get("lat", ""), location.get("long", ""),
             )
             for lap in race.get("Laps", []):
                 for timing in lap["Timings"]:
