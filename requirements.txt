@@ -1,4 +1,5 @@
 pandas
+matplotlib
 beautifulsoup4
 requests
 fastf1
