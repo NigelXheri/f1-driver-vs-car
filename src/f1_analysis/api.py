@@ -3,6 +3,8 @@
 import json
 import shutil
 import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import requests
@@ -24,12 +26,15 @@ def save_json(data, file_path):
     temporary_path.replace(file_path)
 
 
-def request_page(session, endpoint, offset):
+def request_page(session, endpoint, offset, *, rate_limiter=None):
     """Request one page, respecting rate limits and retrying failures."""
     url = f"{BASE_URL}/{endpoint.strip('/')}/"
 
     for attempt in range(6):
-        time.sleep(8)
+        if rate_limiter is None:
+            time.sleep(8)
+        else:
+            rate_limiter.wait()
 
         try:
             response = session.get(
@@ -45,6 +50,21 @@ def request_page(session, endpoint, offset):
             continue
 
         if response.status_code == 429:
+            if rate_limiter is not None:
+                retry_after = response.headers.get("Retry-After")
+                try:
+                    delay = float(retry_after)
+                except (TypeError, ValueError):
+                    try:
+                        retry_at = parsedate_to_datetime(retry_after)
+                        delay = (retry_at - datetime.now(timezone.utc)).total_seconds()
+                    except (TypeError, ValueError):
+                        delay = 60
+                delay = max(1, delay)
+                rate_limiter.defer(delay)
+                print(f"Rate limit reached. Pausing requests for {delay:.1f}s.", flush=True)
+                continue
+
             try:
                 delay = max(
                     60,
@@ -75,7 +95,7 @@ def request_page(session, endpoint, offset):
     )
 
 
-def fetch_all_pages(session, endpoint, output_file, record_type):
+def fetch_all_pages(session, endpoint, output_file, record_type, *, rate_limiter=None):
     """Combine all response pages into one JSON file."""
     output_file = Path(output_file)
 
@@ -96,7 +116,7 @@ def fetch_all_pages(session, endpoint, output_file, record_type):
         if page_file.exists():
             data = json.loads(page_file.read_text(encoding="utf-8"))
         else:
-            data = request_page(session, endpoint, offset)
+            data = request_page(session, endpoint, offset, rate_limiter=rate_limiter)
             save_json(data, page_file)
 
         metadata = data["MRData"]
