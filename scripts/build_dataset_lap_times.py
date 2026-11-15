@@ -15,7 +15,10 @@ OUTPUT_FILE = PROJECT_ROOT / "data" / "raw" / "lap_times.csv"
 RACE_FILENAME = re.compile(r"([0-9]{4})_round_([0-9]+)\.json")
 COLUMNS = (
     "season", "round", "race_name", "race_date", "race_start_time",
-    "circuit_id", "circuit_name", "circuit_url", "country", "locality",
+    # "race_url",
+    "circuit_id", "circuit_name",
+    # "circuit_url",
+    "country", "locality",
     "latitude", "longitude", "driver_id", "lap", "position", "lap_time",
 )
 
@@ -35,8 +38,11 @@ def write_race(csv_writer, path):
             location = circuit.get("Location", {})
             race_fields = (
                 race["season"], race["round"], race["raceName"], race["date"],
-                race.get("time", ""), race.get("url", ""), circuit["circuitId"],
-                circuit["circuitName"], circuit.get("url", ""),
+                race.get("time", ""), 
+                # race.get("url", ""), 
+                circuit["circuitId"],
+                circuit["circuitName"],
+                # circuit.get("url", ""),
                 location.get("country", ""), location.get("locality", ""),
                 location.get("lat", ""), location.get("long", ""),
             )
