@@ -11,7 +11,7 @@ from tempfile import NamedTemporaryFile
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DIR = PROJECT_ROOT / "data" / "raw" / "laps"
-OUTPUT_FILE = PROJECT_ROOT / "data" / "processed" / "lap_times.csv"
+OUTPUT_FILE = PROJECT_ROOT / "data" / "raw" / "lap_times.csv"
 RACE_FILENAME = re.compile(r"([0-9]{4})_round_([0-9]+)\.json")
 COLUMNS = (
     "season", "round", "race_name", "race_date", "race_start_time",
