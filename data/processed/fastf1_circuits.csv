@@ -1,4 +1,129 @@
 Year,Round,Event,Country,Location,CircuitKey,CornerCount,Rotation,MarshalLightsCount,MarshalSectorsCount
+2018,1,Australian Grand Prix,Australia,Melbourne,10,14,44.0,20,20
+2018,2,Bahrain Grand Prix,Bahrain,Sakhir,63,15,92.0,18,18
+2018,3,Chinese Grand Prix,China,Shanghai,49,16,237.0,20,20
+2018,4,Azerbaijan Grand Prix,Azerbaijan,Baku,144,20,357.0,21,21
+2018,5,Spanish Grand Prix,Spain,Barcelona,15,16,303.0,17,17
+2018,6,Monaco Grand Prix,Monaco,Monte Carlo,22,19,315.0,19,19
+2018,7,Canadian Grand Prix,Canada,Montréal,23,14,62.0,15,15
+2018,8,French Grand Prix,France,Le Castellet,28,15,0.0,19,19
+2018,9,Austrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2018,10,British Grand Prix,Great Britain,Silverstone,2,18,92.0,17,16
+2018,11,German Grand Prix,Germany,Hockenheim,34,17,0.0,15,14
+2018,12,Hungarian Grand Prix,Hungary,Budapest,4,16,40.0,19,19
+2018,13,Belgian Grand Prix,Belgium,Spa-Francorchamps,7,19,91.0,19,19
+2018,14,Italian Grand Prix,Italy,Monza,39,11,95.0,17,17
+2018,15,Singapore Grand Prix,Singapore,Singapore,61,23,335.0,18,18
+2018,16,Russian Grand Prix,Russia,Sochi,79,18,324.0,20,20
+2018,17,Japanese Grand Prix,Japan,Suzuka,46,18,0.0,20,20
+2018,18,United States Grand Prix,United States,Austin,9,20,0.0,20,20
+2018,19,Mexican Grand Prix,Mexico,Mexico City,65,17,36.0,16,16
+2018,20,Brazilian Grand Prix,Brazil,São Paulo,14,15,258.0,16,16
+2018,21,Abu Dhabi Grand Prix,United Arab Emirates,Yas Marina,70,21,280.0,20,20
+2019,1,Australian Grand Prix,Australia,Melbourne,10,14,44.0,20,20
+2019,2,Bahrain Grand Prix,Bahrain,Sakhir,63,15,92.0,18,18
+2019,3,Chinese Grand Prix,China,Shanghai,49,16,237.0,20,20
+2019,4,Azerbaijan Grand Prix,Azerbaijan,Baku,144,20,357.0,21,21
+2019,5,Spanish Grand Prix,Spain,Barcelona,15,16,303.0,17,17
+2019,6,Monaco Grand Prix,Monaco,Monte Carlo,22,19,315.0,19,19
+2019,7,Canadian Grand Prix,Canada,Montréal,23,14,62.0,15,15
+2019,8,French Grand Prix,France,Le Castellet,28,15,0.0,19,19
+2019,9,Austrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2019,10,British Grand Prix,Great Britain,Silverstone,2,18,92.0,17,16
+2019,11,German Grand Prix,Germany,Hockenheim,34,17,0.0,15,14
+2019,12,Hungarian Grand Prix,Hungary,Budapest,4,16,40.0,19,19
+2019,13,Belgian Grand Prix,Belgium,Spa-Francorchamps,7,19,91.0,19,19
+2019,14,Italian Grand Prix,Italy,Monza,39,11,95.0,17,17
+2019,15,Singapore Grand Prix,Singapore,Singapore,61,23,335.0,18,18
+2019,16,Russian Grand Prix,Russia,Sochi,79,18,324.0,20,20
+2019,17,Japanese Grand Prix,Japan,Suzuka,46,18,49.0,20,20
+2019,18,Mexican Grand Prix,Mexico,Mexico City,65,17,36.0,16,16
+2019,19,United States Grand Prix,United States,Austin,9,20,0.0,20,20
+2019,20,Brazilian Grand Prix,Brazil,São Paulo,14,15,258.0,16,16
+2019,21,Abu Dhabi Grand Prix,Abu Dhabi,Yas Island,70,21,280.0,20,20
+2020,1,Austrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2020,2,Styrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2020,3,Hungarian Grand Prix,Hungary,Budapest,4,16,40.0,19,19
+2020,4,British Grand Prix,Great Britain,Silverstone,2,18,92.0,17,16
+2020,5,70th Anniversary Grand Prix,Great Britain,Silverstone,2,18,92.0,17,16
+2020,6,Spanish Grand Prix,Spain,Barcelona,15,16,303.0,17,17
+2020,7,Belgian Grand Prix,Belgium,Spa-Francorchamps,7,19,91.0,19,19
+2020,8,Italian Grand Prix,Italy,Monza,39,11,95.0,17,17
+2020,9,Tuscan Grand Prix,Italy,Mugello,149,0,273.0,0,19
+2020,10,Russian Grand Prix,Russia,Sochi,79,18,324.0,20,20
+2020,11,Eifel Grand Prix,Germany,Nürburgring,72,15,327.0,18,18
+2020,12,Portuguese Grand Prix,Portugal,Portimão,147,15,74.0,19,19
+2020,13,Emilia Romagna Grand Prix,Italy,Imola,6,19,0.0,19,19
+2020,14,Turkish Grand Prix,Turkey,Istanbul,59,14,336.0,20,20
+2020,15,Bahrain Grand Prix,Bahrain,Sakhir,63,15,92.0,18,18
+2020,16,Sakhir Grand Prix,Bahrain,Sakhir,148,0,92.0,0,0
+2020,17,Abu Dhabi Grand Prix,Abu Dhabi,Yas Island,70,21,280.0,20,20
+2021,1,Bahrain Grand Prix,Bahrain,Sakhir,63,15,92.0,18,18
+2021,2,Emilia Romagna Grand Prix,Italy,Imola,6,19,0.0,19,19
+2021,3,Portuguese Grand Prix,Portugal,Portimão,147,15,74.0,19,19
+2021,4,Spanish Grand Prix,Spain,Barcelona,15,16,303.0,17,17
+2021,5,Monaco Grand Prix,Monaco,Monte Carlo,22,19,315.0,19,19
+2021,6,Azerbaijan Grand Prix,Azerbaijan,Baku,144,20,357.0,21,21
+2021,7,French Grand Prix,France,Le Castellet,28,15,0.0,19,19
+2021,8,Styrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2021,9,Austrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2021,10,British Grand Prix,Great Britain,Silverstone,2,18,92.0,17,16
+2021,11,Hungarian Grand Prix,Hungary,Budapest,4,16,40.0,19,19
+2021,12,Belgian Grand Prix,Belgium,Spa-Francorchamps,7,19,91.0,19,19
+2021,13,Dutch Grand Prix,Netherlands,Zandvoort,55,14,0.0,19,19
+2021,14,Italian Grand Prix,Italy,Monza,39,11,95.0,17,17
+2021,15,Russian Grand Prix,Russia,Sochi,79,18,324.0,20,20
+2021,16,Turkish Grand Prix,Turkey,Istanbul,59,14,336.0,20,20
+2021,17,United States Grand Prix,United States,Austin,9,20,0.0,20,20
+2021,18,Mexico City Grand Prix,Mexico,Mexico City,65,17,36.0,16,16
+2021,19,São Paulo Grand Prix,Brazil,São Paulo,14,15,258.0,16,16
+2021,20,Qatar Grand Prix,Qatar,Lusail,150,16,61.0,20,20
+2021,21,Saudi Arabian Grand Prix,Saudi Arabia,Jeddah,149,27,104.0,21,21
+2021,22,Abu Dhabi Grand Prix,Abu Dhabi,Yas Island,70,16,280.0,20,20
+2022,1,Bahrain Grand Prix,Bahrain,Sakhir,63,15,92.0,18,18
+2022,2,Saudi Arabian Grand Prix,Saudi Arabia,Jeddah,149,27,104.0,21,21
+2022,3,Australian Grand Prix,Australia,Melbourne,10,14,44.0,20,20
+2022,4,Emilia Romagna Grand Prix,Italy,Imola,6,19,0.0,19,19
+2022,5,Miami Grand Prix,United States,Miami,151,19,2.0,19,20
+2022,6,Spanish Grand Prix,Spain,Barcelona,15,16,303.0,17,17
+2022,7,Monaco Grand Prix,Monaco,Monaco,22,19,315.0,19,19
+2022,8,Azerbaijan Grand Prix,Azerbaijan,Baku,144,20,357.0,21,21
+2022,9,Canadian Grand Prix,Canada,Montréal,23,14,62.0,15,15
+2022,10,British Grand Prix,Great Britain,Silverstone,2,18,92.0,17,16
+2022,11,Austrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2022,12,French Grand Prix,France,Le Castellet,28,15,0.0,19,19
+2022,13,Hungarian Grand Prix,Hungary,Budapest,4,16,40.0,19,19
+2022,14,Belgian Grand Prix,Belgium,Spa-Francorchamps,7,19,91.0,21,21
+2022,15,Dutch Grand Prix,Netherlands,Zandvoort,55,14,0.0,19,19
+2022,16,Italian Grand Prix,Italy,Monza,39,11,95.0,17,17
+2022,17,Singapore Grand Prix,Singapore,Marina Bay,61,19,335.0,16,16
+2022,18,Japanese Grand Prix,Japan,Suzuka,46,18,49.0,22,22
+2022,19,United States Grand Prix,United States,Austin,9,20,0.0,20,20
+2022,20,Mexico City Grand Prix,Mexico,Mexico City,65,17,36.0,16,16
+2022,21,São Paulo Grand Prix,Brazil,São Paulo,14,15,258.0,16,16
+2022,22,Abu Dhabi Grand Prix,Abu Dhabi,Yas Island,70,16,280.0,20,20
+2023,1,Bahrain Grand Prix,Bahrain,Sakhir,63,15,92.0,18,18
+2023,2,Saudi Arabian Grand Prix,Saudi Arabia,Jeddah,149,27,104.0,21,21
+2023,3,Australian Grand Prix,Australia,Melbourne,10,14,44.0,20,20
+2023,4,Azerbaijan Grand Prix,Azerbaijan,Baku,144,20,357.0,21,21
+2023,5,Miami Grand Prix,United States,Miami,151,19,2.0,19,20
+2023,6,Monaco Grand Prix,Monaco,Monaco,22,19,315.0,19,19
+2023,7,Spanish Grand Prix,Spain,Barcelona,15,14,303.0,16,16
+2023,8,Canadian Grand Prix,Canada,Montréal,23,14,62.0,15,15
+2023,9,Austrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2023,10,British Grand Prix,Great Britain,Silverstone,2,18,92.0,17,16
+2023,11,Hungarian Grand Prix,Hungary,Budapest,4,16,40.0,19,19
+2023,12,Belgian Grand Prix,Belgium,Spa-Francorchamps,7,19,91.0,21,21
+2023,13,Dutch Grand Prix,Netherlands,Zandvoort,55,14,0.0,19,19
+2023,14,Italian Grand Prix,Italy,Monza,39,11,95.0,17,17
+2023,15,Singapore Grand Prix,Singapore,Marina Bay,61,19,335.0,16,16
+2023,16,Japanese Grand Prix,Japan,Suzuka,46,18,49.0,22,22
+2023,17,Qatar Grand Prix,Qatar,Lusail,150,16,61.0,20,20
+2023,18,United States Grand Prix,United States,Austin,9,20,0.0,20,20
+2023,19,Mexico City Grand Prix,Mexico,Mexico City,65,17,36.0,16,16
+2023,20,São Paulo Grand Prix,Brazil,São Paulo,14,15,258.0,16,16
+2023,21,Las Vegas Grand Prix,United States,Las Vegas,152,17,90.0,21,21
+2023,22,Abu Dhabi Grand Prix,Abu Dhabi,Yas Island,70,16,280.0,20,20
 2024,1,Bahrain Grand Prix,Bahrain,Sakhir,63,15,92.0,18,18
 2024,2,Saudi Arabian Grand Prix,Saudi Arabia,Jeddah,149,27,104.0,21,21
 2024,3,Australian Grand Prix,Australia,Melbourne,10,14,44.0,20,20
@@ -23,3 +148,45 @@ Year,Round,Event,Country,Location,CircuitKey,CornerCount,Rotation,MarshalLightsC
 2024,22,Las Vegas Grand Prix,United States,Las Vegas,152,17,90.0,21,21
 2024,23,Qatar Grand Prix,Qatar,Lusail,150,16,61.0,20,20
 2024,24,Abu Dhabi Grand Prix,United Arab Emirates,Yas Island,70,16,280.0,20,20
+2025,1,Australian Grand Prix,Australia,Melbourne,10,14,44.0,20,20
+2025,2,Chinese Grand Prix,China,Shanghai,49,16,237.0,20,20
+2025,3,Japanese Grand Prix,Japan,Suzuka,46,18,49.0,22,22
+2025,4,Bahrain Grand Prix,Bahrain,Sakhir,63,15,92.0,18,18
+2025,5,Saudi Arabian Grand Prix,Saudi Arabia,Jeddah,149,27,104.0,21,21
+2025,6,Miami Grand Prix,United States,Miami Gardens,151,19,2.0,19,20
+2025,7,Emilia Romagna Grand Prix,Italy,Imola,6,19,0.0,19,19
+2025,8,Monaco Grand Prix,Monaco,Monaco,22,19,315.0,19,19
+2025,9,Spanish Grand Prix,Spain,Barcelona,15,14,303.0,16,16
+2025,10,Canadian Grand Prix,Canada,Montréal,23,14,62.0,15,15
+2025,11,Austrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2025,12,British Grand Prix,United Kingdom,Silverstone,2,18,92.0,17,16
+2025,13,Belgian Grand Prix,Belgium,Spa-Francorchamps,7,19,91.0,21,21
+2025,14,Hungarian Grand Prix,Hungary,Budapest,4,16,40.0,19,19
+2025,15,Dutch Grand Prix,Netherlands,Zandvoort,55,14,0.0,19,19
+2025,16,Italian Grand Prix,Italy,Monza,39,11,95.0,17,17
+2025,17,Azerbaijan Grand Prix,Azerbaijan,Baku,144,20,357.0,21,21
+2025,18,Singapore Grand Prix,Singapore,Marina Bay,61,19,335.0,16,16
+2025,19,United States Grand Prix,United States,Austin,9,20,0.0,20,20
+2025,20,Mexico City Grand Prix,Mexico,Mexico City,65,17,36.0,16,16
+2025,21,São Paulo Grand Prix,Brazil,São Paulo,14,15,258.0,16,16
+2025,22,Las Vegas Grand Prix,United States,Las Vegas,152,17,90.0,21,21
+2025,23,Qatar Grand Prix,Qatar,Lusail,150,16,61.0,20,20
+2025,24,Abu Dhabi Grand Prix,United Arab Emirates,Yas Island,70,16,280.0,20,20
+2026,1,Australian Grand Prix,Australia,Melbourne,10,14,44.0,20,20
+2026,2,Chinese Grand Prix,China,Shanghai,49,16,237.0,20,20
+2026,3,Japanese Grand Prix,Japan,Suzuka,46,18,49.0,22,22
+2026,4,Miami Grand Prix,United States,Miami Gardens,151,19,2.0,19,20
+2026,5,Canadian Grand Prix,Canada,Montréal,23,14,62.0,15,15
+2026,6,Monaco Grand Prix,Monaco,Monte Carlo,22,19,315.0,19,19
+2026,7,Barcelona Grand Prix,Spain,Barcelona,15,14,303.0,16,16
+2026,8,Austrian Grand Prix,Austria,Spielberg,19,10,1.0,16,16
+2026,9,British Grand Prix,United Kingdom,Silverstone,2,18,92.0,17,16
+2026,10,Belgian Grand Prix,Belgium,Spa-Francorchamps,7,19,91.0,21,21
+2026,11,Hungarian Grand Prix,Hungary,Budapest,4,16,40.0,19,19
+2026,12,Dutch Grand Prix,Netherlands,Zandvoort,55,14,0.0,19,19
+2026,13,Italian Grand Prix,Italy,Monza,39,11,95.0,17,17
+2026,15,Azerbaijan Grand Prix,Azerbaijan,Baku,144,20,357.0,21,21
+2026,17,Singapore Grand Prix,Singapore,Marina Bay,61,19,335.0,16,16
+2026,18,United States Grand Prix,United States,Austin,9,20,0.0,20,20
+2026,19,Mexico City Grand Prix,Mexico,Mexico City,65,17,36.0,16,16
+2026,20,São Paulo Grand Prix,Brazil,São Paulo,14,15,258.0,16,16

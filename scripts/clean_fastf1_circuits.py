@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "processed"
@@ -63,7 +63,7 @@ def clean_corners():
     """Clean the corner-level dataset."""
     df = pd.read_csv(RAW_CORNERS_FILE)
     df = df.drop(columns=["CornerLetter"], errors="ignore")
-    
+
     numeric_columns = [
         "Year",
         "CornerNumber",
