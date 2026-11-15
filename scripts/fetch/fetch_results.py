@@ -16,7 +16,7 @@ START_YEAR = 1996
 END_YEAR = 2026
 CONTACT_EMAIL = "sara.petro.tech@gmail.com"
 
-OUTPUT_DIR = PROJECT_ROOT / "data" / "raw" / "results"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "raw"
 
 
 def main():
