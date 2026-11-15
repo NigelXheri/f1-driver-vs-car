@@ -14,7 +14,7 @@ HEADERS = {
 }
 
 RAW_FILE = "data/raw/wikipedia_circuits.html"
-RAW_CSV_FILE = "data/raw/wikipedia_circuits.csv"
+RAW_CSV_FILE = "data/raw/wikipedia_circuits_raw.csv"
 
 
 def save_html(html):

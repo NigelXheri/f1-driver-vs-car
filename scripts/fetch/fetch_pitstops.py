@@ -15,7 +15,7 @@ from threading import Lock
 import requests
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from f1_analysis.api import fetch_all_pages, request_page, save_json
@@ -24,7 +24,7 @@ from f1_analysis.api import fetch_all_pages, request_page, save_json
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 OUTPUT_DIR = RAW_DIR / "pitstops"
 LEGACY_DIR = RAW_DIR / "api" / "pitstops"
-YEARS = range(2011, 2025)
+YEARS = range(2011, 2027)
 WORKERS = 4
 
 
