@@ -1,0 +1,12 @@
+# 00_build_dataset_csvs.ipynb  Cell numbers below are zero-based. Saved outputs are historical evidence, not a fresh execution. 
+## Cell 0 — markdown
+# Build dataset CSVs
+Before you do anything else you need to first build the dataset CSVs. They are not synced in the repo until now because they tend to be a bit heavy. Run the cells one by one to build them and you can find them in the `data/raw` folder.
+
+## Cell 1 — markdown
+## Build the Lap Times CSV
+
+## Cell 2 — code
+!python3 ../scripts/build_dataset_lap_times.py
+
+Wrote 639,293 lap timings from 588 rounds to C:\Projects\f1-driver-vs-car\data\raw\lap_times.csv
