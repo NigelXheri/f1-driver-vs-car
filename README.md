@@ -1,4 +1,4 @@
-# F1 Driver vs Car — Driver / Machine
+# F1 Driver vs Car — The Science of Speed
 
 **What makes the difference in Formula 1: the driver, the car, or the conditions?**
 
@@ -20,11 +20,14 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser. Stop the se
 
 On Windows, use `python` instead of `python3` if necessary. The server only requires Python 3: **no dependency installation, npm build, API key or data download is needed to view the results**. Alternatively, open `src/result_showcase_website/index.html` directly in a modern browser.
 
+The website uses the **Science of Speed** redesign: an animated racing-line hero, timing-screen charts, career timelines and a light statistics section. The repository’s original results, evidence and figures remain available.
+
 The website includes:
 
 - Interactive views of 2024 constructor pace and teammate gaps.
 - Circuit comparisons, race-progression charts and driver career findings.
 - Explanations of null hypotheses, Welch’s t-test, Spearman correlation, permutation tests and p-values.
+- Four readable notebook pages with saved tables/charts, collapsible code and original `.ipynb` downloads.
 - Original notebook figures and links to the evidence and repository audit.
 
 For implementation details, see the [website README](src/result_showcase_website/README.md).
@@ -169,7 +172,7 @@ node --test src/result_showcase_website/tests/test_site.cjs
 
 The Python checks require Python 3.10+ and the existing CSVs/notebooks. They independently reconstruct selected headline results without API calls or dataset writes. The JavaScript checks require Node.js 18+ and verify rendering logic, comparison controls and local links using a DOM fixture. Node is not required to view the website.
 
-Five tests passed during the showcase review. Original extracted figure bytes were checked against notebook outputs. The full 99,999-resample permutation simulation was inspected but not rerun, and real-browser visual verification was not completed because the review browser blocked local-file previews.
+All five automated tests pass after redesign integration, including race scrubber and replay checks. Original extracted figure bytes were checked against notebook outputs. Desktop and phone browser checks passed with no reported console warnings or errors. The full 99,999-resample permutation simulation was inspected but not rerun.
 
 Useful reference documents:
 

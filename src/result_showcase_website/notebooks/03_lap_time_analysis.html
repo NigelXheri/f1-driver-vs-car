@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'self'; base-uri 'none'">
+<title>Lap-performance findings — The Science of Speed</title><link rel="icon" href="../assets/mark.svg"><link rel="stylesheet" href="reader.css"></head>
+<body><a class="skip" href="#analysis">Skip to analysis</a><header><a href="../index.html#archive">← The Science of Speed / Archive</a><a href="03_lap_time_analysis.ipynb" download>Download notebook ↓</a></header>
+<main><div class="reader-intro"><p class="eyebrow">NOTEBOOK 03 / SAVED ANALYSIS</p><h1>Lap-performance findings</h1><p>Read the streamlined findings: circuit associations, the 0.611-second teammate gap, 2024 constructor pace and race progression.</p>
+<p class="snapshot">These are the notebook’s saved narrative and outputs, exported without running code. Original wording and any inconsistencies are retained; see the <a href="../REPOSITORY_AUDIT.md">claim audit</a> and <a href="../FINDINGS.md">reviewed findings</a> for corrections. Cell numbers are zero-based. Downloads need the repository’s data and Python dependencies to run.</p>
+<details class="contents"><summary>On this page</summary><ol><li><a href="#cell-0">Factors Affecting Formula 1 Lap Times</a></li><li><a href="#cell-1">Data preparation</a></li><li><a href="#cell-5">Analysis sample and quality safeguards</a></li><li><a href="#cell-7">1. Circuit Characteristics</a></li><li><a href="#cell-9">Visual evidence</a></li><li><a href="#cell-12">Conclusion — Circuit Characteristics</a></li><li><a href="#cell-13">2. Driver Performance — Teammate Comparisons</a></li><li><a href="#cell-15">2024 teammates</a></li><li><a href="#cell-18">Conclusion — Driver Performance</a></li><li><a href="#cell-19">3. Constructor / Car-Associated Performance</a></li><li><a href="#cell-22">Consistency across the 2024 season</a></li><li><a href="#cell-24">Conclusion — Constructor / Car Performance</a></li><li><a href="#cell-25">4. Race Progression</a></li><li><a href="#cell-28">Conclusion — Race Progression</a></li><li><a href="#cell-29">Overall Findings</a></li></ol></details></div>
+<article id="analysis" aria-label="Notebook analysis"><section class="notebook-cell" id="cell-0" data-cell="0"><h1>Factors Affecting Formula 1 Lap Times</h1>
+<p><strong>Exploratory data analysis · 1996–2026 lap records · 2024 team comparisons</strong></p>
+<h3>Research question</h3>
+<p><strong>Which factors are associated with differences in Formula 1 lap times?</strong></p>
+<h3>Scope</h3>
+<p>This notebook presents four analyses: <strong>(1) circuit characteristics, (2) driver performance, (3) constructor-associated performance, and (4) race progression</strong>. Pit-stop records are used to identify laps for filtering, but a dedicated pit-stop impact analysis is <strong>not included</strong> in this version.</p>
+<h3>Approach</h3>
+<p>Lap times (in seconds) are merged with circuit metadata, race results, and recorded pit stops. Selected exploratory pace laps are compared within races or normalized to a relevant reference. Results are <strong>associations, not proof of causation</strong>.</p>
+<blockquote>
+<p><strong>Reproducibility:</strong> Run the notebook from the <code>f1-driver-vs-car</code> project in VS Code or Jupyter with the CSV files in their existing project folders. The saved charts below come from the previously executed notebook; rerun all cells locally to refresh them after any dataset changes.</p>
+</blockquote>
+</section><section class="notebook-cell" id="cell-1" data-cell="1"><h2>Data preparation</h2>
+<h3>Data sources and project layout</h3>
+<table>
+<thead>
+<tr>
+  <th>Source</th>
+  <th>Expected location</th>
+  <th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Cleaned lap times</td>
+  <td><code>data/processed/laps/lap_times_cleaned.csv</code></td>
+  <td>Driver, race, lap number and lap time (seconds)</td>
+</tr>
+<tr>
+  <td>Circuit metadata</td>
+  <td><code>data/processed/**/wikipedia_circuits_cleaned.csv</code></td>
+  <td>Circuit type, length and turns</td>
+</tr>
+<tr>
+  <td>Race results</td>
+  <td><code>data/raw/results.csv</code></td>
+  <td>Constructor associated with each driver and race</td>
+</tr>
+<tr>
+  <td>Pit stops</td>
+  <td><code>data/raw/pitstops.csv</code></td>
+  <td>Pit-stop marker (available from 2011 onward)</td>
+</tr>
+</tbody>
+</table>
+<p>We retain <strong>one row per driver–race–lap</strong>. The original cleaned lap-time file is not modified.</p>
+</section><section class="notebook-cell" id="cell-2" data-cell="2"><details class="code-cell"><summary>Show code · cell 2</summary><pre>from pathlib import Path
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Locate the repository root whether the notebook is opened from the root or a subfolder.
+project_root = next(
+    (
+        p for p in (Path.cwd(), *Path.cwd().parents)
+        if (p / &quot;data&quot; / &quot;processed&quot; / &quot;laps&quot; / &quot;lap_times_cleaned.csv&quot;).is_file()
+    ),
+    None,
+)
+if project_root is None:
+    raise FileNotFoundError(
+        &quot;Missing data/processed/laps/lap_times_cleaned.csv. &quot;
+        &quot;Open this notebook inside the F1 project and prepare the cleaned CSV first.&quot;
+    )
+
+df = pd.read_csv(
+    project_root / &quot;data&quot; / &quot;processed&quot; / &quot;laps&quot; / &quot;lap_times_cleaned.csv&quot;,
+    low_memory=False,
+)
+print(f&quot;Loaded {len(df):,} cleaned lap records.&quot;)</pre></details><div class="saved-output"><pre>Loaded 639,293 cleaned lap records.
+</pre></div></section><section class="notebook-cell" id="cell-3" data-cell="3"><details class="code-cell"><summary>Show code · cell 3</summary><pre># Match circuit names from two sources, including known naming differences.
+lap_circuits = df[[&quot;circuit_id&quot;, &quot;circuit_name&quot;]].drop_duplicates()
+wiki_files = list((project_root / &quot;data&quot; / &quot;processed&quot;).rglob(&quot;wikipedia_circuits_cleaned.csv&quot;))
+if len(wiki_files) != 1:
+    raise ValueError(f&quot;Expected one Wikipedia circuits CSV, found {len(wiki_files)}.&quot;)
+
+wiki = pd.read_csv(wiki_files[0])
+wiki[&quot;Circuit&quot;] = (
+    wiki[&quot;Circuit&quot;]
+    .str.replace(r&quot;\[[^\]]*\]&quot;, &quot;&quot;, regex=True)
+    .str.replace(r&quot;[*†‡]&quot;, &quot;&quot;, regex=True)
+    .str.replace(r&quot;\s+&quot;, &quot; &quot;, regex=True)
+    .str.strip()
+)
+name_to_id = dict(zip(lap_circuits[&quot;circuit_name&quot;], lap_circuits[&quot;circuit_id&quot;]))
+name_to_id.update({
+    &quot;Albert Park Circuit&quot;: &quot;albert_park&quot;,
+    &quot;Algarve International Circuit&quot;: &quot;portimao&quot;,
+    &quot;Autódromo Oscar y Juan Gálvez&quot;: &quot;galvez&quot;,
+    &quot;Autodromo Internazionale Enzo e Dino Ferrari&quot;: &quot;imola&quot;,
+    &quot;Autodromo José Carlos Pace&quot;: &quot;interlagos&quot;,
+    &quot;Circuito Permanente de Jerez&quot;: &quot;jerez&quot;,
+    &quot;Circuit Zandvoort&quot;: &quot;zandvoort&quot;,
+    &quot;Las Vegas Strip Circuit&quot;: &quot;vegas&quot;,
+    &quot;Suzuka International Racing Course&quot;: &quot;suzuka&quot;,
+    &quot;Korea International Circuit&quot;: &quot;yeongam&quot;,
+})
+wiki[&quot;circuit_id&quot;] = wiki[&quot;Circuit&quot;].map(name_to_id)
+
+circuit_features = (
+    wiki.loc[wiki[&quot;circuit_id&quot;].notna(),
+             [&quot;circuit_id&quot;, &quot;Circuit&quot;, &quot;Type&quot;, &quot;Direction&quot;, &quot;Turns&quot;, &quot;Circuit_length_km&quot;]]
+    .rename(columns={
+        &quot;Circuit&quot;: &quot;wiki_circuit_name&quot;,
+        &quot;Type&quot;: &quot;circuit_type&quot;,
+        &quot;Direction&quot;: &quot;circuit_direction&quot;,
+        &quot;Turns&quot;: &quot;wiki_turns&quot;,
+        &quot;Circuit_length_km&quot;: &quot;wiki_length_km&quot;,
+    })
+    .copy()
+)
+for column in [&quot;wiki_turns&quot;, &quot;wiki_length_km&quot;]:
+    circuit_features[column] = pd.to_numeric(circuit_features[column], errors=&quot;raise&quot;)
+
+# &#x27;many_to_one&#x27; protects against accidental duplication of lap records.
+laps_merged = df.merge(circuit_features, on=&quot;circuit_id&quot;, how=&quot;left&quot;, validate=&quot;many_to_one&quot;)
+if laps_merged[&quot;wiki_length_km&quot;].isna().any():
+    raise ValueError(&quot;Some circuits lack matching length data; review circuit-name mapping.&quot;)
+print(f&quot;Circuit metadata matched: {circuit_features[&#x27;circuit_id&#x27;].nunique()} circuits.&quot;)</pre></details><div class="saved-output"><pre>Circuit metadata matched: 42 circuits.
+</pre></div></section><section class="notebook-cell" id="cell-4" data-cell="4"><details class="code-cell"><summary>Show code · cell 4</summary><pre># Add a constructor to each driver in each race.
+results = pd.read_csv(project_root / &quot;data&quot; / &quot;raw&quot; / &quot;results.csv&quot;, low_memory=False)
+team_columns = [&quot;season&quot;, &quot;round&quot;, &quot;driver_id&quot;, &quot;constructor_id&quot;, &quot;constructor_name&quot;]
+laps_with_teams = laps_merged.merge(
+    results[team_columns], on=[&quot;season&quot;, &quot;round&quot;, &quot;driver_id&quot;],
+    how=&quot;left&quot;, validate=&quot;many_to_one&quot;,
+)
+
+# Pit stops: aggregate multiple stops on a lap before merging to avoid row inflation.
+pitstops = pd.read_csv(project_root / &quot;data&quot; / &quot;raw&quot; / &quot;pitstops.csv&quot;, low_memory=False)
+pit_key = [&quot;season&quot;, &quot;round&quot;, &quot;driver_id&quot;, &quot;lap&quot;]
+pit_laps = (
+    pitstops.groupby(pit_key, as_index=False)
+    .agg(recorded_pit_stops=(&quot;stop&quot;, &quot;size&quot;))
+)
+laps_with_pits = laps_with_teams.merge(
+    pit_laps, on=pit_key, how=&quot;left&quot;, validate=&quot;many_to_one&quot;,
+)
+laps_with_pits[&quot;has_recorded_pit_stop&quot;] = (
+    laps_with_pits[&quot;recorded_pit_stops&quot;].notna().astype(&quot;boolean&quot;)
+)
+laps_with_pits[&quot;recorded_pit_stops&quot;] = laps_with_pits[&quot;recorded_pit_stops&quot;].astype(&quot;Int64&quot;)
+# Unknown is not the same as zero: pit-stop coverage begins in 2011.
+laps_with_pits.loc[laps_with_pits[&quot;season&quot;] &lt; 2011, &quot;has_recorded_pit_stop&quot;] = pd.NA
+print(f&quot;Integrated dataset: {len(laps_with_pits):,} driver-lap records.&quot;)</pre></details><div class="saved-output"><pre>Integrated dataset: 639,293 driver-lap records.
+</pre></div></section><section class="notebook-cell" id="cell-5" data-cell="5"><h3>Analysis sample and quality safeguards</h3>
+<p>The original dataset is preserved. For exploratory race-pace analysis, we:</p>
+<ul>
+<li>exclude first laps and <strong>matched</strong> pit-stop laps;</li>
+<li>flag <em>candidate mass delays</em> when ≥5 drivers and ≥50% of drivers on the same race lap record times over 100% above that race's median;</li>
+<li>retain laps within <strong>±20% of the race median</strong> as a pragmatic initial pace sample.</li>
+</ul>
+<p>These rules are <strong>heuristics</strong>, not confirmed labels for every red flag, safety car or pit event. We do not infer that missing pre-2011 pit records mean that no stop occurred. All filters should be revisited for a formal causal or predictive study.</p>
+</section><section class="notebook-cell" id="cell-6" data-cell="6"><details class="code-cell"><summary>Show code · cell 6</summary><pre># Essential safeguards only (the exploratory diagnostic cells are omitted here).
+required = [
+    &quot;season&quot;, &quot;round&quot;, &quot;driver_id&quot;, &quot;lap&quot;, &quot;lap_time_seconds&quot;,
+    &quot;constructor_id&quot;, &quot;circuit_id&quot;, &quot;circuit_type&quot;, &quot;wiki_length_km&quot;, &quot;wiki_turns&quot;,
+]
+missing = [c for c in required if c not in laps_with_pits.columns]
+if missing:
+    raise ValueError(f&quot;Missing analysis columns: {missing}&quot;)
+if laps_with_pits[required].isna().any().any():
+    raise ValueError(&quot;Missing values in required analysis columns.&quot;)
+if laps_with_pits.duplicated([&quot;season&quot;, &quot;round&quot;, &quot;driver_id&quot;, &quot;lap&quot;]).any():
+    raise ValueError(&quot;Duplicate driver-race-lap combinations.&quot;)
+if (laps_with_pits[&quot;lap_time_seconds&quot;] &lt;= 0).any():
+    raise ValueError(&quot;Nonpositive lap times detected.&quot;)
+
+features = laps_with_pits.copy()
+features[&quot;is_first_lap&quot;] = features[&quot;lap&quot;].eq(1)
+features[&quot;race_median_seconds&quot;] = features.groupby([&quot;season&quot;, &quot;round&quot;])[&quot;lap_time_seconds&quot;].transform(&quot;median&quot;)
+features[&quot;lap_delta_seconds&quot;] = features[&quot;lap_time_seconds&quot;] - features[&quot;race_median_seconds&quot;]
+features[&quot;lap_relative_pct&quot;] = 100 * features[&quot;lap_delta_seconds&quot;] / features[&quot;race_median_seconds&quot;]
+
+# Flag shared extreme delays without deleting source rows.
+race_lap_keys = [&quot;season&quot;, &quot;round&quot;, &quot;lap&quot;]
+features[&quot;very_slow_lap&quot;] = features[&quot;lap_relative_pct&quot;].gt(100)
+lap_events = (
+    features.groupby(race_lap_keys, as_index=False)
+    .agg(total_drivers=(&quot;driver_id&quot;, &quot;size&quot;), affected_drivers=(&quot;very_slow_lap&quot;, &quot;sum&quot;))
+)
+lap_events[&quot;affected_fraction&quot;] = lap_events[&quot;affected_drivers&quot;] / lap_events[&quot;total_drivers&quot;]
+flagged_keys = lap_events.loc[
+    lap_events[&quot;affected_drivers&quot;].ge(5) &amp; lap_events[&quot;affected_fraction&quot;].ge(0.5),
+    race_lap_keys,
+]
+features[&quot;is_mass_delay_candidate&quot;] = pd.MultiIndex.from_frame(
+    features[race_lap_keys]
+).isin(pd.MultiIndex.from_frame(flagged_keys))
+
+is_recorded_pit = features[&quot;has_recorded_pit_stop&quot;].fillna(False).astype(bool)
+pace_mask = (
+    ~features[&quot;is_first_lap&quot;]
+    &amp; ~features[&quot;is_mass_delay_candidate&quot;]
+    &amp; ~is_recorded_pit
+    &amp; features[&quot;lap_relative_pct&quot;].between(-20, 20)
+)
+pace_laps = features.loc[pace_mask].copy()
+if pace_laps.empty:
+    raise ValueError(&quot;No race-pace observations remain after filtering.&quot;)
+print(f&quot;Raw driver laps: {len(features):,}&quot;)
+print(f&quot;Candidate mass-delay race-laps: {len(flagged_keys):,}&quot;)
+print(f&quot;Filtered pace laps: {len(pace_laps):,}&quot;)</pre></details><div class="saved-output"><pre>Raw driver laps: 639,293
+Candidate mass-delay race-laps: 56
+Filtered pace laps: 577,990
+</pre></div></section><section class="notebook-cell" id="cell-7" data-cell="7"><hr />
+<h2>1. Circuit Characteristics</h2>
+<p><strong>Question:</strong> How are circuit length, number of turns and circuit type related to lap times?</p>
+<p><strong>Method:</strong> Compute a median lap time for each race, then summarize across races at the circuit level. We compare absolute lap time with circuit length, and distance-normalized time (<strong>seconds per km</strong>) with turns and circuit type. Each circuit enters the correlation and type-comparison summaries once.</p>
+</section><section class="notebook-cell" id="cell-8" data-cell="8"><details class="code-cell"><summary>Show code · cell 8</summary><pre># Aggregate to one representative value per circuit.
+race_summary = (
+    pace_laps.groupby(
+        [&quot;season&quot;, &quot;round&quot;, &quot;circuit_id&quot;, &quot;circuit_type&quot;, &quot;wiki_length_km&quot;, &quot;wiki_turns&quot;],
+        as_index=False,
+    )
+    .agg(median_lap_seconds=(&quot;lap_time_seconds&quot;, &quot;median&quot;), n_laps=(&quot;lap_time_seconds&quot;, &quot;size&quot;))
+)
+race_summary[&quot;seconds_per_km&quot;] = race_summary[&quot;median_lap_seconds&quot;] / race_summary[&quot;wiki_length_km&quot;]
+circuit_summary = (
+    race_summary.groupby([&quot;circuit_id&quot;, &quot;circuit_type&quot;, &quot;wiki_length_km&quot;, &quot;wiki_turns&quot;], as_index=False)
+    .agg(
+        median_lap_seconds=(&quot;median_lap_seconds&quot;, &quot;median&quot;),
+        seconds_per_km=(&quot;seconds_per_km&quot;, &quot;median&quot;),
+        n_races=(&quot;season&quot;, &quot;size&quot;),
+    )
+)
+print(f&quot;Circuits analyzed: {len(circuit_summary)}&quot;)</pre></details><div class="saved-output"><pre>Circuits analyzed: 42
+</pre></div></section><section class="notebook-cell" id="cell-9" data-cell="9"><h3>Visual evidence</h3>
+<ol>
+<li><strong>Circuit length vs lap time:</strong> longer layouts generally imply longer absolute lap times.</li>
+<li><strong>Turns vs seconds/km:</strong> check whether turn count adds a visible linear pattern after adjusting for distance.</li>
+<li><strong>Circuit type:</strong> compare the distribution across permanent and street circuits.</li>
+</ol>
+</section><section class="notebook-cell" id="cell-10" data-cell="10"><details class="code-cell"><summary>Show code · cell 10</summary><pre>
+import matplotlib.pyplot as plt
+
+# GRAPH 1: CIRCUIT LENGTH VS LAP TIME
+
+plt.figure(figsize=(9, 5))
+
+plt.scatter(
+    circuit_summary[&quot;wiki_length_km&quot;],
+    circuit_summary[&quot;median_lap_seconds&quot;],
+    alpha=0.7
+)
+
+plt.xlabel(&quot;Circuit Length (km)&quot;)
+plt.ylabel(&quot;Median Lap Time (seconds)&quot;)
+plt.title(&quot;Circuit Length vs Median Lap Time&quot;)
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+
+# GRAPH 2: TURNS VS SECONDS PER KM
+
+plt.figure(figsize=(9, 5))
+
+plt.scatter(
+    circuit_summary[&quot;wiki_turns&quot;],
+    circuit_summary[&quot;seconds_per_km&quot;],
+    alpha=0.7
+)
+
+plt.xlabel(&quot;Number of Turns&quot;)
+plt.ylabel(&quot;Median Seconds per Kilometer&quot;)
+plt.title(&quot;Circuit Turns vs Lap Pace&quot;)
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+
+
+# GRAPH 3: CIRCUIT TYPE COMPARISON
+
+groups = [
+    group[&quot;seconds_per_km&quot;].values
+    for _, group in circuit_summary.groupby(&quot;circuit_type&quot;)
+]
+
+labels = [
+    name
+    for name, _ in circuit_summary.groupby(&quot;circuit_type&quot;)
+]
+
+plt.figure(figsize=(9, 5))
+
+plt.boxplot(groups, tick_labels=labels)
+
+plt.xlabel(&quot;Circuit Type&quot;)
+plt.ylabel(&quot;Median Seconds per Kilometer&quot;)
+plt.title(&quot;Lap Pace by Circuit Type&quot;)
+plt.xticks(rotation=20)
+plt.grid(axis=&quot;y&quot;, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+</pre></details><div class="saved-output"><figure><a href="figures/03_lap_time_analysis-cell-10-output-0.png"><img loading="lazy" src="figures/03_lap_time_analysis-cell-10-output-0.png" alt="Saved notebook figure, cell 10, output 1"></a><figcaption>Original saved figure · cell 10 · <a href="figures/03_lap_time_analysis-cell-10-output-0.png">Open full size</a></figcaption></figure></div><div class="saved-output"><figure><a href="figures/03_lap_time_analysis-cell-10-output-1.png"><img loading="lazy" src="figures/03_lap_time_analysis-cell-10-output-1.png" alt="Saved notebook figure, cell 10, output 2"></a><figcaption>Original saved figure · cell 10 · <a href="figures/03_lap_time_analysis-cell-10-output-1.png">Open full size</a></figcaption></figure></div><div class="saved-output"><figure><a href="figures/03_lap_time_analysis-cell-10-output-2.png"><img loading="lazy" src="figures/03_lap_time_analysis-cell-10-output-2.png" alt="Saved notebook figure, cell 10, output 3"></a><figcaption>Original saved figure · cell 10 · <a href="figures/03_lap_time_analysis-cell-10-output-2.png">Open full size</a></figcaption></figure></div></section><section class="notebook-cell" id="cell-11" data-cell="11"><details class="code-cell"><summary>Show code · cell 11</summary><pre>
+# CIRCUIT CORRELATIONS
+
+length_corr = circuit_summary[
+    &quot;wiki_length_km&quot;
+].corr(circuit_summary[&quot;median_lap_seconds&quot;])
+
+turns_corr = circuit_summary[
+    &quot;wiki_turns&quot;
+].corr(circuit_summary[&quot;seconds_per_km&quot;])
+
+print(&quot;CORRELATION RESULTS&quot;)
+print(f&quot;Circuit length vs lap time: {length_corr:.3f}&quot;)
+print(f&quot;Turns vs seconds per km: {turns_corr:.3f}&quot;)
+
+print(&quot;\nCIRCUIT TYPE SUMMARY&quot;)
+display(
+    circuit_summary.groupby(&quot;circuit_type&quot;)
+    .agg(
+        circuits=(&quot;circuit_id&quot;, &quot;count&quot;),
+        median_seconds_per_km=(&quot;seconds_per_km&quot;, &quot;median&quot;)
+    )
+    .round(3)
+)
+</pre></details><div class="saved-output"><pre>CORRELATION RESULTS
+Circuit length vs lap time: 0.756
+Turns vs seconds per km: 0.087
+
+CIRCUIT TYPE SUMMARY
+</pre></div><div class="saved-output"><div class="table-scroll"><div>
+
+<table>
+  <thead>
+    <tr>
+      <th></th>
+      <th>circuits</th>
+      <th>median_seconds_per_km</th>
+    </tr>
+    <tr>
+      <th>circuit_type</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Race circuit</th>
+      <td>32</td>
+      <td>17.945</td>
+    </tr>
+    <tr>
+      <th>Street circuit</th>
+      <td>10</td>
+      <td>18.149</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div></section><section class="notebook-cell" id="cell-12" data-cell="12"><h3>Conclusion — Circuit Characteristics</h3>
+<ul>
+<li><strong>Circuit length:</strong> a fairly strong positive association with median absolute lap time (<strong>Pearson r = 0.756</strong>). This is physically expected because longer circuits cover more distance.</li>
+<li><strong>Turns:</strong> a very weak linear correlation with median seconds per km (<strong>r = 0.087</strong>). Corner geometry and speed matter more than turn count alone, and were not modeled here.</li>
+<li><strong>Circuit type:</strong> street circuits had a slightly higher circuit-level median (<strong>18.149 s/km</strong>) than permanent circuits (<strong>17.945 s/km</strong>), about <strong>1.14%</strong> higher; statistical significance has not been established.</li>
+</ul>
+<p><strong>Takeaway:</strong> distance explains part of the variation in absolute lap time; turn count and circuit type alone offer much weaker descriptive signals. Wikipedia circuit dimensions may not reflect historic layouts.</p>
+</section><section class="notebook-cell" id="cell-13" data-cell="13"><hr />
+<h2>2. Driver Performance — Teammate Comparisons</h2>
+<p><strong>Question:</strong> Do teammates achieve different lap times in otherwise more comparable conditions?</p>
+<p><strong>Method:</strong> Pair two drivers from the same constructor, in the same race and lap number. Calculate each driver's difference from their teammate; negative values indicate a faster lap. To display season comparisons, use pairs with an absolute difference of <strong>5 seconds or less</strong> and retain drivers with at least <strong>100 paired laps</strong>. This filter is a presentation-oriented heuristic and may exclude genuine race-pace differences.</p>
+<p>Matching teammates reduces some car differences but does <strong>not</strong> control for tires, traffic, damage or strategy.</p>
+</section><section class="notebook-cell" id="cell-14" data-cell="14"><details class="code-cell"><summary>Show code · cell 14</summary><pre># Match the two teammates for each constructor-race-lap.
+pair_keys = [&quot;season&quot;, &quot;round&quot;, &quot;constructor_id&quot;, &quot;lap&quot;]
+driver_data = pace_laps.copy()
+driver_data[&quot;drivers_in_pair&quot;] = driver_data.groupby(pair_keys)[&quot;driver_id&quot;].transform(&quot;nunique&quot;)
+paired_laps = driver_data.loc[driver_data[&quot;drivers_in_pair&quot;].eq(2)].copy()
+if paired_laps.empty or (paired_laps.groupby(pair_keys).size() != 2).any():
+    raise ValueError(&quot;Teammate pairing is incomplete or ambiguous.&quot;)
+
+paired_laps[&quot;teammate_lap_seconds&quot;] = (
+    paired_laps.groupby(pair_keys)[&quot;lap_time_seconds&quot;].transform(&quot;sum&quot;)
+    - paired_laps[&quot;lap_time_seconds&quot;]
+)
+paired_laps[&quot;driver_gap_seconds&quot;] = (
+    paired_laps[&quot;lap_time_seconds&quot;] - paired_laps[&quot;teammate_lap_seconds&quot;]
+)
+paired_laps[&quot;absolute_gap_seconds&quot;] = paired_laps[&quot;driver_gap_seconds&quot;].abs()
+unique_pairs = paired_laps.drop_duplicates(subset=pair_keys)
+
+print(f&quot;Matched teammate lap pairs: {len(unique_pairs):,}&quot;)
+print(f&quot;Median absolute gap (unfiltered): {unique_pairs[&#x27;absolute_gap_seconds&#x27;].median():.3f} s&quot;)
+
+# Both driver-level records remain necessary for the signed-gap bar chart.
+driver_analysis = paired_laps.loc[paired_laps[&quot;absolute_gap_seconds&quot;].le(5)].copy()
+driver_summary = (
+    driver_analysis.groupby([&quot;season&quot;, &quot;constructor_id&quot;, &quot;driver_id&quot;], as_index=False)
+    .agg(
+        median_gap=(&quot;driver_gap_seconds&quot;, &quot;median&quot;),
+        mean_gap=(&quot;driver_gap_seconds&quot;, &quot;mean&quot;),
+        paired_laps=(&quot;driver_gap_seconds&quot;, &quot;size&quot;),
+    )
+)
+driver_summary = driver_summary.loc[driver_summary[&quot;paired_laps&quot;].ge(100)].copy()</pre></details><div class="saved-output"><pre>Matched teammate lap pairs: 242,133
+Median absolute gap (unfiltered): 0.611 s
+</pre></div></section><section class="notebook-cell" id="cell-15" data-cell="15"><h3>2024 teammates</h3>
+<p>In the chart below, a <strong>negative median gap</strong> means that driver's laps were typically faster than their teammate's in the selected comparisons. These are <strong>within-team</strong> differences, not a cross-team driver ranking.</p>
+</section><section class="notebook-cell" id="cell-16" data-cell="16"><details class="code-cell"><summary>Show code · cell 16</summary><pre>
+# DRIVER PERFORMANCE IN THE 2024 SEASON
+
+selected_season = 2024
+
+season_drivers = driver_summary[
+    driver_summary[&quot;season&quot;] == selected_season
+].copy()
+
+season_drivers[&quot;label&quot;] = (
+    season_drivers[&quot;driver_id&quot;]
+    + &quot; (&quot; + season_drivers[&quot;constructor_id&quot;] + &quot;)&quot;
+)
+
+season_drivers = season_drivers.sort_values(
+    &quot;median_gap&quot;
+)
+
+if season_drivers.empty:
+    raise ValueError(&quot;No drivers available for this season.&quot;)
+
+plt.figure(figsize=(11, 8))
+
+plt.barh(
+    season_drivers[&quot;label&quot;],
+    season_drivers[&quot;median_gap&quot;]
+)
+
+plt.axvline(0, color=&quot;black&quot;, linestyle=&quot;--&quot;)
+
+plt.xlabel(&quot;Median Gap to Teammate (seconds)&quot;)
+plt.ylabel(&quot;Driver (Constructor)&quot;)
+plt.title(&quot;2024 Driver Performance Relative to Teammate&quot;)
+
+plt.grid(axis=&quot;x&quot;, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print(&quot;\n2024 DRIVER PERFORMANCE SUMMARY:&quot;)
+print(
+    season_drivers[
+        [
+            &quot;driver_id&quot;,
+            &quot;constructor_id&quot;,
+            &quot;median_gap&quot;,
+            &quot;paired_laps&quot;
+        ]
+    ].to_string(index=False)
+)
+</pre></details><div class="saved-output"><figure><a href="figures/03_lap_time_analysis-cell-16-output-0.png"><img loading="lazy" src="figures/03_lap_time_analysis-cell-16-output-0.png" alt="Saved notebook figure, cell 16, output 1"></a><figcaption>Original saved figure · cell 16 · <a href="figures/03_lap_time_analysis-cell-16-output-0.png">Open full size</a></figcaption></figure></div><div class="saved-output"><pre>
+2024 DRIVER PERFORMANCE SUMMARY:
+      driver_id constructor_id  median_gap  paired_laps
+ max_verstappen       red_bull     -0.5640         1016
+          albon       williams     -0.2125          794
+         norris        mclaren     -0.2115         1236
+     hulkenberg           haas     -0.2020         1090
+         alonso   aston_martin     -0.1630         1020
+          gasly         alpine     -0.1405          956
+         bottas         sauber     -0.0640         1066
+        leclerc        ferrari     -0.0470         1181
+        tsunoda             rb     -0.0350         1013
+         lawson             rb     -0.0250          235
+      colapinto       williams     -0.0210          189
+        russell       mercedes     -0.0130         1134
+       hamilton       mercedes      0.0130         1134
+          sainz        ferrari      0.0310         1135
+           zhou         sauber      0.0640         1066
+      ricciardo             rb      0.0660          778
+           ocon         alpine      0.1100          906
+         stroll   aston_martin      0.1630         1020
+kevin_magnussen           haas      0.2030         1022
+        piastri        mclaren      0.2115         1236
+       sargeant       williams      0.2830          605
+          perez       red_bull      0.5640         1016
+</pre></div></section><section class="notebook-cell" id="cell-17" data-cell="17"><details class="code-cell"><summary>Show code · cell 17</summary><pre># Histogram: count each matched teammate pair once, not once per driver.
+unique_filtered_pairs = driver_analysis.drop_duplicates(subset=pair_keys)
+median_filtered_gap = unique_filtered_pairs[&quot;absolute_gap_seconds&quot;].median()
+
+plt.figure(figsize=(10, 5))
+plt.hist(unique_filtered_pairs[&quot;absolute_gap_seconds&quot;], bins=50, edgecolor=&quot;white&quot;, alpha=0.85)
+plt.axvline(
+    median_filtered_gap, color=&quot;red&quot;, linestyle=&quot;--&quot;, linewidth=2,
+    label=f&quot;Filtered median: {median_filtered_gap:.3f} s&quot;,
+)
+plt.xlabel(&quot;Absolute Teammate Gap (seconds)&quot;)
+plt.ylabel(&quot;Number of Teammate Lap Pairs&quot;)
+plt.title(&quot;Distribution of Teammate Lap Time Differences&quot;)
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.show()</pre></details><div class="saved-output"><figure><a href="figures/03_lap_time_analysis-cell-17-output-0.png"><img loading="lazy" src="figures/03_lap_time_analysis-cell-17-output-0.png" alt="Saved notebook figure, cell 17, output 1"></a><figcaption>Original saved figure · cell 17 · <a href="figures/03_lap_time_analysis-cell-17-output-0.png">Open full size</a></figcaption></figure></div></section><section class="notebook-cell" id="cell-18" data-cell="18"><h3>Conclusion — Driver Performance</h3>
+<p>Across <strong>242,133 unique teammate lap pairs</strong>, the <em>unfiltered</em> median absolute time difference was <strong>0.611 seconds</strong>. In the selected 2024 comparisons, Verstappen's median advantage over Pérez was about <strong>0.56 s</strong>, and Norris's over Piastri about <strong>0.21 s</strong>; Hamilton and Russell were close to parity.</p>
+<p><strong>Takeaway:</strong> measurable teammate differences exist even within the same constructor. They cannot be attributed solely to driver skill because the data do not fully control for setup, strategy, tire compounds or traffic. The 5-second cutoff may influence season-level comparisons.</p>
+</section><section class="notebook-cell" id="cell-19" data-cell="19"><hr />
+<h2>3. Constructor / Car-Associated Performance</h2>
+<p><strong>Question:</strong> How does observed lap pace differ by constructor?</p>
+<p><strong>Method:</strong> Compare each lap with the <strong>median lap time across drivers in the same race and lap number</strong>. Aggregate first by driver-race, then by constructor-race to avoid allowing drivers with more recorded laps to dominate. Restrict the 2024 ranking to constructors with at least eight eligible races. In the constructor-race calculation, two eligible drivers and at least five constructors in the race are required.</p>
+<p>Negative relative percentages indicate <strong>faster</strong> pace than the within-race-lap grid median. These figures describe the combined driver–car–team result, <strong>not a causal estimate of car design alone</strong>.</p>
+</section><section class="notebook-cell" id="cell-20" data-cell="20"><details class="code-cell"><summary>Show code · cell 20</summary><pre>
+# ANALYSIS 3 - CONSTRUCTOR PERFORMANCE
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Use previously prepared pace laps
+car_data = pace_laps.copy()
+
+race_lap_keys = [&quot;season&quot;, &quot;round&quot;, &quot;lap&quot;]
+
+# 1. Keep laps with enough competitors
+car_data[&quot;drivers_on_lap&quot;] = (
+    car_data.groupby(race_lap_keys)[&quot;driver_id&quot;]
+    .transform(&quot;nunique&quot;)
+)
+
+car_data = car_data[
+    car_data[&quot;drivers_on_lap&quot;] &gt;= 6
+].copy()
+
+if car_data.empty:
+    raise ValueError(&quot;No comparable laps found.&quot;)
+
+# 2. Median lap time across competitors
+car_data[&quot;grid_median_seconds&quot;] = (
+    car_data.groupby(race_lap_keys)[&quot;lap_time_seconds&quot;]
+    .transform(&quot;median&quot;)
+)
+
+# 3. Relative performance (%)
+car_data[&quot;relative_pace_pct&quot;] = (
+    (
+        car_data[&quot;lap_time_seconds&quot;]
+        / car_data[&quot;grid_median_seconds&quot;]
+    ) - 1
+) * 100
+
+# Negative = faster than grid median
+# Positive = slower than grid median
+
+# 4. One result per driver per race
+driver_race = (
+    car_data.groupby(
+        [&quot;season&quot;, &quot;round&quot;, &quot;constructor_id&quot;, &quot;driver_id&quot;],
+        as_index=False
+    )
+    .agg(
+        median_relative_pct=(&quot;relative_pace_pct&quot;, &quot;median&quot;),
+        n_laps=(&quot;lap&quot;, &quot;size&quot;)
+    )
+)
+
+driver_race = driver_race[
+    driver_race[&quot;n_laps&quot;] &gt;= 10
+].copy()
+
+# 5. Aggregate both teammates
+team_race = (
+    driver_race.groupby(
+        [&quot;season&quot;, &quot;round&quot;, &quot;constructor_id&quot;],
+        as_index=False
+    )
+    .agg(
+        team_relative_pct=(&quot;median_relative_pct&quot;, &quot;mean&quot;),
+        n_drivers=(&quot;driver_id&quot;, &quot;nunique&quot;)
+    )
+)
+
+# Require both teammates
+team_race = team_race[
+    team_race[&quot;n_drivers&quot;] == 2
+].copy()
+
+# Require at least five teams per race
+team_race[&quot;teams_compared&quot;] = (
+    team_race.groupby([&quot;season&quot;, &quot;round&quot;])[&quot;constructor_id&quot;]
+    .transform(&quot;size&quot;)
+)
+
+team_race = team_race[
+    team_race[&quot;teams_compared&quot;] &gt;= 5
+].copy()
+
+# Validation
+if team_race.empty:
+    raise ValueError(&quot;No valid team-race comparisons.&quot;)
+
+assert team_race[&quot;team_relative_pct&quot;].notna().all()
+
+print(&quot;Constructor analysis passed!&quot;)
+print(&quot;Comparable laps:&quot;, len(car_data))
+print(&quot;Team-race observations:&quot;, len(team_race))
+
+# 6. Analyze the 2024 season
+selected_season = 2024
+
+car_2024 = team_race[
+    team_race[&quot;season&quot;] == selected_season
+].copy()
+
+constructor_summary = (
+    car_2024.groupby(&quot;constructor_id&quot;, as_index=False)
+    .agg(
+        median_relative_pct=(&quot;team_relative_pct&quot;, &quot;median&quot;),
+        races=(&quot;round&quot;, &quot;nunique&quot;)
+    )
+)
+
+# Require at least eight comparable races
+constructor_summary = constructor_summary[
+    constructor_summary[&quot;races&quot;] &gt;= 8
+].sort_values(&quot;median_relative_pct&quot;)
+
+if constructor_summary.empty:
+    raise ValueError(&quot;No constructors with enough 2024 races.&quot;)
+
+print(&quot;\n2024 CONSTRUCTOR PERFORMANCE:&quot;)
+print(constructor_summary.to_string(index=False))
+</pre></details><div class="saved-output"><pre>Constructor analysis passed!
+Comparable laps: 575953
+Team-race observations: 5183
+
+2024 CONSTRUCTOR PERFORMANCE:
+constructor_id  median_relative_pct  races
+       mclaren            -0.929581     24
+       ferrari            -0.758811     24
+      red_bull            -0.682148     21
+      mercedes            -0.521756     23
+  aston_martin             0.202931     20
+          haas             0.273125     23
+        alpine             0.372063     20
+      williams             0.405951     19
+            rb             0.420290     21
+        sauber             0.778982     22
+</pre></div></section><section class="notebook-cell" id="cell-21" data-cell="21"><details class="code-cell"><summary>Show code · cell 21</summary><pre>
+# GRAPH 1 - 2024 CONSTRUCTOR PERFORMANCE
+
+plot_data = constructor_summary.sort_values(
+    &quot;median_relative_pct&quot;,
+    ascending=False
+)
+
+plt.figure(figsize=(10, 6))
+
+plt.barh(
+    plot_data[&quot;constructor_id&quot;],
+    plot_data[&quot;median_relative_pct&quot;]
+)
+
+plt.axvline(
+    0,
+    color=&quot;black&quot;,
+    linestyle=&quot;--&quot;,
+    linewidth=1
+)
+
+plt.xlabel(&quot;Median Relative Lap Pace (%)&quot;)
+plt.ylabel(&quot;Constructor&quot;)
+plt.title(&quot;2024 Constructor Performance Relative to Grid&quot;)
+
+plt.grid(axis=&quot;x&quot;, alpha=0.3)
+plt.tight_layout()
+plt.show()
+</pre></details><div class="saved-output"><figure><a href="figures/03_lap_time_analysis-cell-21-output-0.png"><img loading="lazy" src="figures/03_lap_time_analysis-cell-21-output-0.png" alt="Saved notebook figure, cell 21, output 1"></a><figcaption>Original saved figure · cell 21 · <a href="figures/03_lap_time_analysis-cell-21-output-0.png">Open full size</a></figcaption></figure></div></section><section class="notebook-cell" id="cell-22" data-cell="22"><h3>Consistency across the 2024 season</h3>
+<p>A horizontal boxplot summarizes each team's distribution of relative pace over its <strong>eligible races</strong>. Narrower boxes mean less between-race variation in this metric; differences in circuit mix and race coverage can also change box width.</p>
+</section><section class="notebook-cell" id="cell-23" data-cell="23"><details class="code-cell"><summary>Show code · cell 23</summary><pre>
+# GRAPH 2 - CONSTRUCTOR CONSISTENCY (2024)
+
+import matplotlib.pyplot as plt
+
+season_2024 = team_race[
+    team_race[&quot;season&quot;] == 2024
+].copy()
+
+# Recalculate summary to include every eligible team
+constructor_summary = (
+    season_2024.groupby(&quot;constructor_id&quot;, as_index=False)
+    .agg(
+        median_relative_pct=(&quot;team_relative_pct&quot;, &quot;median&quot;),
+        races=(&quot;round&quot;, &quot;nunique&quot;)
+    )
+    .sort_values(&quot;median_relative_pct&quot;)
+)
+
+print(&quot;Constructors:&quot;, len(constructor_summary))
+print(constructor_summary.to_string(index=False))
+
+if len(constructor_summary) != 10:
+    raise ValueError(
+        &quot;Expected 10 constructors for 2024. &quot;
+        &quot;Check the team_race dataset.&quot;
+    )
+
+# Compare distributions across races
+teams = constructor_summary[&quot;constructor_id&quot;].tolist()
+
+distributions = [
+    season_2024.loc[
+        season_2024[&quot;constructor_id&quot;] == team,
+        &quot;team_relative_pct&quot;
+    ].values
+    for team in teams
+]
+
+plt.figure(figsize=(11, 7))
+
+plt.boxplot(
+    distributions,
+    tick_labels=teams,
+    orientation=&quot;horizontal&quot;,
+    showfliers=True
+)
+
+plt.axvline(
+    0, color=&quot;red&quot;, linestyle=&quot;--&quot;,
+    label=&quot;Grid Median&quot;
+)
+
+plt.xlabel(&quot;Relative Lap Pace (%)&quot;)
+plt.ylabel(&quot;Constructor&quot;)
+plt.title(&quot;2024 Constructor Performance Consistency&quot;)
+plt.legend()
+plt.grid(axis=&quot;x&quot;, alpha=0.3)
+plt.tight_layout()
+plt.show()
+</pre></details><div class="saved-output"><pre>Constructors: 10
+constructor_id  median_relative_pct  races
+       mclaren            -0.929581     24
+       ferrari            -0.758811     24
+      red_bull            -0.682148     21
+      mercedes            -0.521756     23
+  aston_martin             0.202931     20
+          haas             0.273125     23
+        alpine             0.372063     20
+      williams             0.405951     19
+            rb             0.420290     21
+        sauber             0.778982     22
+</pre></div><div class="saved-output"><figure><a href="figures/03_lap_time_analysis-cell-23-output-1.png"><img loading="lazy" src="figures/03_lap_time_analysis-cell-23-output-1.png" alt="Saved notebook figure, cell 23, output 2"></a><figcaption>Original saved figure · cell 23 · <a href="figures/03_lap_time_analysis-cell-23-output-1.png">Open full size</a></figcaption></figure></div></section><section class="notebook-cell" id="cell-24" data-cell="24"><h3>Conclusion — Constructor / Car Performance</h3>
+<p>Among the analyzed 2024 constructor-race observations, <strong>McLaren</strong> had the fastest median relative pace (<strong>−0.930%</strong>), followed by <strong>Ferrari (−0.759%)</strong>, <strong>Red Bull (−0.682%)</strong> and <strong>Mercedes (−0.522%)</strong>. In the consistency boxplot, Red Bull's central range was relatively narrow while Mercedes showed greater between-race variation.</p>
+<p><strong>Takeaway:</strong> constructor affiliation is associated with different observed lap-time performance. This is <strong>not</strong> a measurement of the car's isolated effect: drivers, race tactics and other conditions contribute. Because eligibility rules leave different numbers of races per team (for example, McLaren 24 and Red Bull 21), rankings are exploratory rather than strictly like-for-like.</p>
+</section><section class="notebook-cell" id="cell-25" data-cell="25"><hr />
+<h2>4. Race Progression</h2>
+<p><strong>Question:</strong> Do lap times change systematically over a race?</p>
+<p><strong>Method:</strong> Express a driver's lap as a percentage of the highest recorded lap number in that race. Keep drivers who reached at least <strong>90%</strong> of the recorded race laps. Compare each selected lap with the median of that driver's selected laps for the same race, then summarize within ten race-progress bins. This permits comparisons across races of different lengths without mixing absolute lap times.</p>
+</section><section class="notebook-cell" id="cell-26" data-cell="26"><details class="code-cell"><summary>Show code · cell 26</summary><pre>
+# ANALYSIS 4 - RACE PROGRESSION
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+race_keys = [&quot;season&quot;, &quot;round&quot;]
+driver_keys = [&quot;season&quot;, &quot;round&quot;, &quot;driver_id&quot;]
+
+# Maximum recorded lap in each race
+race_max = (
+    features.groupby(race_keys)[&quot;lap&quot;]
+    .max()
+    .rename(&quot;race_max_lap&quot;)
+)
+
+# Maximum lap reached by each driver
+driver_max = (
+    features.groupby(driver_keys)[&quot;lap&quot;]
+    .max()
+    .rename(&quot;driver_max_lap&quot;)
+)
+
+progress_data = pace_laps.copy()
+
+progress_data = progress_data.join(
+    race_max, on=race_keys
+)
+
+progress_data = progress_data.join(
+    driver_max, on=driver_keys
+)
+
+# Focus on drivers who reached at least 90%
+# of the maximum recorded race lap
+progress_data = progress_data[
+    progress_data[&quot;driver_max_lap&quot;]
+    &gt;= 0.90 * progress_data[&quot;race_max_lap&quot;]
+].copy()
+
+# Calculate race progression percentage
+progress_data[&quot;race_progress_pct&quot;] = (
+    progress_data[&quot;lap&quot;]
+    / progress_data[&quot;race_max_lap&quot;]
+) * 100
+
+# Driver&#x27;s typical lap time in that race
+progress_data[&quot;driver_race_median&quot;] = (
+    progress_data.groupby(driver_keys)[&quot;lap_time_seconds&quot;]
+    .transform(&quot;median&quot;)
+)
+
+# Relative lap time (%)
+progress_data[&quot;relative_lap_pct&quot;] = (
+    (
+        progress_data[&quot;lap_time_seconds&quot;]
+        / progress_data[&quot;driver_race_median&quot;]
+    ) - 1
+) * 100
+
+# Divide each race into 10 phases
+bins = list(range(0, 101, 10))
+
+labels = [
+    f&quot;{i}-{i+10}%&quot;
+    for i in range(0, 100, 10)
+]
+
+progress_data[&quot;race_phase&quot;] = pd.cut(
+    progress_data[&quot;race_progress_pct&quot;],
+    bins=bins,
+    labels=labels,
+    include_lowest=True
+)
+
+# One median per driver, race and phase
+driver_phase = (
+    progress_data.groupby(
+        driver_keys + [&quot;race_phase&quot;],
+        observed=True,
+        as_index=False
+    )
+    .agg(
+        median_relative_pct=(&quot;relative_lap_pct&quot;, &quot;median&quot;),
+        n_laps=(&quot;lap&quot;, &quot;size&quot;)
+    )
+)
+
+# Overall summary of race progression
+progress_summary = (
+    driver_phase.groupby(&quot;race_phase&quot;, observed=True)
+    .agg(
+        median_relative_pct=(&quot;median_relative_pct&quot;, &quot;median&quot;),
+        observations=(&quot;median_relative_pct&quot;, &quot;size&quot;)
+    )
+    .reset_index()
+)
+
+if progress_summary.empty:
+    raise ValueError(&quot;No race progression data available.&quot;)
+
+print(&quot;RACE PROGRESSION ANALYSIS PASSED!&quot;)
+
+print(&quot;\nRace progression summary:&quot;)
+print(progress_summary.to_string(index=False))
+</pre></details><div class="saved-output"><pre>RACE PROGRESSION ANALYSIS PASSED!
+
+Race progression summary:
+race_phase  median_relative_pct  observations
+     0-10%             1.431974          8943
+    10-20%             0.940114          9355
+    20-30%             0.539176          9435
+    30-40%             0.266058          9432
+    40-50%             0.049163          9446
+    50-60%            -0.167902          9477
+    60-70%            -0.455665          9422
+    70-80%            -0.650123          9451
+    80-90%            -0.826681          9454
+   90-100%            -0.742481          9450
+</pre></div></section><section class="notebook-cell" id="cell-27" data-cell="27"><details class="code-cell"><summary>Show code · cell 27</summary><pre>
+# GRAPH 1 - RACE PROGRESSION
+
+plt.figure(figsize=(11, 5))
+
+plt.plot(
+    progress_summary[&quot;race_phase&quot;].astype(str),
+    progress_summary[&quot;median_relative_pct&quot;],
+    marker=&quot;o&quot;,
+    linewidth=2
+)
+
+plt.axhline(
+    0,
+    color=&quot;red&quot;,
+    linestyle=&quot;--&quot;,
+    label=&quot;Driver-race median&quot;
+)
+
+plt.xlabel(&quot;Race Progression&quot;)
+plt.ylabel(&quot;Relative Lap Time (%)&quot;)
+plt.title(&quot;How Lap Times Change Throughout a Race&quot;)
+
+plt.xticks(rotation=30)
+plt.grid(alpha=0.3)
+plt.legend()
+plt.tight_layout()
+plt.show()
+</pre></details><div class="saved-output"><figure><a href="figures/03_lap_time_analysis-cell-27-output-0.png"><img loading="lazy" src="figures/03_lap_time_analysis-cell-27-output-0.png" alt="Saved notebook figure, cell 27, output 1"></a><figcaption>Original saved figure · cell 27 · <a href="figures/03_lap_time_analysis-cell-27-output-0.png">Open full size</a></figcaption></figure></div></section><section class="notebook-cell" id="cell-28" data-cell="28"><h3>Conclusion — Race Progression</h3>
+<p>Relative lap times generally <strong>decreased over the course of a race</strong> in the selected sample. The first <strong>0–10%</strong> of race distance was about <strong>+1.43%</strong> slower than each driver's race median; during the last <strong>90–100%</strong> the median was about <strong>−0.75%</strong> relative to that reference.</p>
+<p><strong>Takeaway:</strong> later race phases were generally associated with faster laps. Reduced fuel load is a plausible explanation, but pit strategy, tire changes and degradation, track evolution, traffic and race-control events were not independently modeled, so no single cause can be established.</p>
+</section><section class="notebook-cell" id="cell-29" data-cell="29"><hr />
+<h2>Overall Findings</h2>
+<table>
+<thead>
+<tr>
+  <th>Factor</th>
+  <th>Main finding from this exploratory analysis</th>
+  <th>Caution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Circuit length</td>
+  <td>Positive correlation with absolute lap time (<strong>r = 0.756</strong>)</td>
+  <td>More distance naturally takes more time</td>
+</tr>
+<tr>
+  <td>Circuit turns / type</td>
+  <td>Weak turns association (<strong>r = 0.087</strong>); street circuits slightly slower per km</td>
+  <td>Historical layout and corner difficulty not controlled</td>
+</tr>
+<tr>
+  <td>Driver</td>
+  <td>Typical matched teammate laps differ (<strong>median absolute gap 0.611 s</strong>)</td>
+  <td>Tires, traffic and strategy remain confounders</td>
+</tr>
+<tr>
+  <td>Constructor/team</td>
+  <td>Different 2024 relative paces; McLaren was fastest by this metric</td>
+  <td>Team results are not pure car effects</td>
+</tr>
+<tr>
+  <td>Race progression</td>
+  <td>Relative lap times generally fall over a race</td>
+  <td>Fuel and tire mechanisms cannot be isolated</td>
+</tr>
+</tbody>
+</table>
+</section></article>
+<footer><a href="../index.html#archive">← Back to the project archive</a><a href="03_lap_time_analysis.ipynb" download>Download original .ipynb ↓</a></footer></main></body></html>
